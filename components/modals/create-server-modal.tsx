@@ -23,8 +23,8 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { useModalStore } from "@/hooks/useModalStore";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 
 const formSchema = z.object({
@@ -36,14 +36,9 @@ const formSchema = z.object({
   }),
 });
 
-const InitialModal = () => {
-  const [isMounted, setIsMounted] = useState(false);
-
+const CreateServerModal = () => {
+  const { isOpen, onClose, type } = useModalStore();
   const router = useRouter();
-
-  useEffect(() => {
-    setIsMounted(true);
-  }, []);
 
   const form = useForm({
     resolver: zodResolver(formSchema),
@@ -53,6 +48,7 @@ const InitialModal = () => {
     },
   });
 
+  const isModalOpen = isOpen && type === "createServer";
   const isLoading = form.formState.isSubmitting;
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
@@ -61,18 +57,18 @@ const InitialModal = () => {
 
       form.reset();
       router.refresh();
-      window.location.reload();
     } catch (error) {
       console.log(error);
     }
   };
 
-  if (!isMounted) {
-    return null;
-  }
+  const handleClose = () => {
+    form.reset();
+    onClose();
+  };
 
   return (
-    <Dialog open>
+    <Dialog open={isModalOpen} onOpenChange={handleClose}>
       <DialogContent className="dark:bg-zinc-800 dark:text-white p-0 overflow-hidden">
         <DialogHeader className="pt-8 px-6">
           <DialogTitle className="text-2xl text-center font-bold">
@@ -137,4 +133,4 @@ const InitialModal = () => {
   );
 };
 
-export default InitialModal;
+export default CreateServerModal;
